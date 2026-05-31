@@ -3,36 +3,24 @@ package cmd
 
 import (
 	"fmt"
-	"os/exec"
 
-	"github.com/exceptionate/gitaur/types"
 	"github.com/spf13/cobra"
 )
 
-func getCommitHash() string {
-	output, err := exec.Command("git", "rev-parse", "HEAD").Output()
-	if err != nil {
-		return ""
-	}
-	return string(output)
-}
-
-var Version = ""
-var Release = ""
-var BuildDate = ""
-var Commit = ""
-var Platform = ""
+var Version = "DEFAULT_VERSION"
+var Release = "DEFAULT_RELEASE"
+var BuildDate = "DEFAULT_DATE"
+var Commit = "DEFAULT_COMMIT"
+var Platform = "DEFAULT_PLATFORM"
 
 func version(cmd *cobra.Command, args []string) {
-	ver := types.Ver{
-		Version:   Version,
-		Release:   Release,
-		BuildDate: BuildDate,
-		Commit:    Commit,
-		Platform:  Platform,
-	}
-
-	fmt.Printf("%+v\n", ver)
+	fmt.Printf("Gitaur CLI %s (%s)\n\nBuilt:    %s\nCommit:   %s\nPlatform: %s\n",
+		Version,
+		Release,
+		BuildDate,
+		Commit[:7],
+		Platform,
+	)
 }
 
 var versionCmd = &cobra.Command{
