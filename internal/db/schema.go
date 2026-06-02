@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS user (
 	linkedin TEXT,
 	portfolio TEXT,
 	leetcode TEXT,
-	githubToken TEXT,
 	phoneNumber TEXT
 )
 `
