@@ -13,3 +13,17 @@ CREATE TABLE IF NOT EXISTS user (
 	phoneNumber TEXT
 )
 `
+
+const ProjectsSchema = `
+CREATE TABLE IF NOT EXISTS projects (
+	name TEXT NOT NULL,
+	repo TEXT NOT NULL,
+	owner TEXT NOT NULL,
+	url TEXT NOT NULL,
+	tech TEXT,
+	desc TEXT,
+	text TEXT,
+	startDate TEXT,
+	endDate TEXT
+)
+`
