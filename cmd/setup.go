@@ -35,15 +35,15 @@ func setup(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	exists, err := db.UserExists()
+	userExists, err := db.UserExists()
 	if err != nil {
 		panic(err)
 	}
 
-	if exists && !force {
+	if userExists && !force {
 		fmt.Println(
 			ui.Warning.Render(
-				"User profile already exists. Re-run with --force to replace it.",
+				"User profile and database already initialized. Use --force to overwrite.\n",
 			),
 		)
 		return

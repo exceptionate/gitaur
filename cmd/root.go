@@ -6,6 +6,7 @@ import (
 	"github.com/exceptionate/gitaur/internal/db"
 	"github.com/exceptionate/gitaur/internal/ui"
 	"github.com/spf13/cobra"
+	"github.com/zalando/go-keyring"
 )
 
 func preRun(cmd *cobra.Command, args []string) {
@@ -20,7 +21,6 @@ func preRun(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		//check if db user table has any entries, if not prompt user to run setup
 		//db exists at this point, so we can safely open it
 		if db.Conn == nil {
 			err := db.Init()
@@ -29,20 +29,46 @@ func preRun(cmd *cobra.Command, args []string) {
 			}
 		}
 
-		var count int
-		err := db.Conn.QueryRow("SELECT COUNT(*) FROM user").Scan(&count)
+		SchemaExists, err := db.SchemaExists()
 		if err != nil {
 			panic(err)
 		}
 
-		if count == 0 && cmd.Name() != "setup" {
+		if !SchemaExists {
 			fmt.Println(
 				ui.Warning.Render(
-					"\nNo user found in database. Run 'gitaur setup'\n",
+					"\nDatabase schema is broken. Run 'gitaur setup' to recreate it.\n",
 				),
 			)
 			return
 		}
+
+		//if user exists
+		UserExists, err := db.UserExists()
+		if err != nil {
+			panic(err)
+		}
+
+		if !UserExists {
+			fmt.Println(
+				ui.Warning.Render(
+					"\nNo user profile found. Run 'gitaur setup'\n",
+				),
+			)
+			return
+		}
+
+		// Auth check. check from keyring if token exists, if not prompt user to run auth
+		_, err = keyring.Get("gitaur", "github")
+		if err != nil {
+			fmt.Println(
+				ui.Warning.Render(
+					"\nNo Github token found. Run 'gitaur auth --refresh'\n",
+				),
+			)
+			return
+		}
+
 	}
 }
 

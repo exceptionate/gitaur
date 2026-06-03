@@ -1,8 +1,13 @@
 package lib
 
 import (
+	"bufio"
+	"fmt"
+	"os"
 	"reflect"
 	"strings"
+
+	"github.com/exceptionate/gitaur/internal/ui"
 )
 
 func HasField[T any](fieldName string) bool {
@@ -20,4 +25,24 @@ func HasField[T any](fieldName string) bool {
 		}
 	}
 	return false
+}
+
+func PromptWithDefault(label string, defaultValue string) string {
+	reader := bufio.NewReader(os.Stdin)
+
+	if defaultValue != "" {
+		fmt.Print(ui.Label.Render(fmt.Sprintf("%s [%s]: ", label, defaultValue)))
+	} else {
+		fmt.Print(ui.Label.Render(fmt.Sprintf("%s: ", label)))
+	}
+
+	input, _ := reader.ReadString('\n')
+
+	input = strings.TrimSpace(input)
+
+	if input == "" {
+		return defaultValue
+	}
+
+	return input
 }
