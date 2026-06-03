@@ -16,7 +16,7 @@ import (
 
 func showProjects() {
 	rows, err := db.Conn.Query(`
-		SELECT name, repo, owner, url, tech, desc, text, startDate, endDate
+		SELECT name, repo, owner, url, tech, tags, desc, text, startDate, endDate
 		FROM projects
 	`)
 	if err != nil {
@@ -29,6 +29,7 @@ func showProjects() {
 	for rows.Next() {
 		var project models.Project
 		var tech string
+		var tagsJSON string
 
 		err := rows.Scan(
 			&project.Name,
@@ -36,6 +37,7 @@ func showProjects() {
 			&project.Owner,
 			&project.Url,
 			&tech,
+			&tagsJSON,
 			&project.Desc,
 			&project.Text,
 			&project.StartDate,
@@ -47,6 +49,12 @@ func showProjects() {
 
 		if tech != "" {
 			project.Tech = strings.Split(tech, ",")
+		}
+
+		if tagsJSON != "" {
+			if err := json.Unmarshal([]byte(tagsJSON), &project.Tags); err != nil {
+				project.Tags = nil
+			}
 		}
 
 		projects = append(projects, project)
@@ -61,12 +69,13 @@ func showProjects() {
 
 	for i, project := range projects {
 		projectInfo := fmt.Sprintf(
-			"%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n",
+			"%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n",
 			ui.Label.Render("Name:"), project.Name,
 			ui.Label.Render("Repo:"), project.Repo,
 			ui.Label.Render("Owner:"), project.Owner,
 			ui.Label.Render("URL:"), project.Url,
 			ui.Label.Render("Tech:"), strings.Join(project.Tech, ", "),
+			ui.Label.Render("Tags:"), strings.Join(project.Tags, ", "),
 			ui.Label.Render("Description:"), project.Desc,
 			ui.Label.Render("Start Date:"), project.StartDate,
 			ui.Label.Render("End Date:"), project.EndDate,
@@ -163,6 +172,15 @@ func addProject() {
 
 	project.Tech = strings.Split(techInput, ",")
 
+	tagsInput := lib.PromptWithDefault(
+		"Tags (comma separated)",
+		"",
+	)
+
+	if tagsInput != "" {
+		project.Tags = strings.Split(tagsInput, ",")
+	}
+
 	res, err = lib.GithubRequest(
 		fmt.Sprintf("https://api.github.com/repos/%s/%s/readme", owner, repo),
 	)
@@ -236,6 +254,11 @@ func addProject() {
 		project.EndDate,
 	)
 
+	tagsJSON, err := json.Marshal(project.Tags)
+	if err != nil {
+		panic(err)
+	}
+
 	_, err = db.Conn.Exec(`
 		INSERT INTO projects (
 			name,
@@ -243,18 +266,20 @@ func addProject() {
 			owner,
 			url,
 			tech,
+			tags,
 			desc,
 			text,
 			startDate,
 			endDate
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		project.Name,
 		project.Repo,
 		project.Owner,
 		project.Url,
 		strings.Join(project.Tech, ","),
+		string(tagsJSON),
 		project.Desc,
 		project.Text,
 		project.StartDate,
@@ -302,13 +327,33 @@ func updateProject(repo string, field string) {
 
 	}
 
-	value := lib.PromptWithDefault(
-		fmt.Sprintf(
-			"Update %s",
-			field,
-		),
-		currentValue.String,
-	)
+	value := ""
+	if strings.EqualFold(field, "tags") {
+		var tags []string
+		if currentValue.String != "" {
+			_ = json.Unmarshal([]byte(currentValue.String), &tags)
+		}
+		value = lib.PromptWithDefault(
+			"Update tags (comma separated)",
+			strings.Join(tags, ","),
+		)
+		if value != "" {
+			tags = strings.Split(value, ",")
+		}
+		encoded, err := json.Marshal(tags)
+		if err != nil {
+			panic(err)
+		}
+		value = string(encoded)
+	} else {
+		value = lib.PromptWithDefault(
+			fmt.Sprintf(
+				"Update %s",
+				field,
+			),
+			currentValue.String,
+		)
+	}
 
 	_, err = db.Conn.Exec(
 		fmt.Sprintf(

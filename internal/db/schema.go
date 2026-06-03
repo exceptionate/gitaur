@@ -21,9 +21,22 @@ CREATE TABLE IF NOT EXISTS projects (
 	owner TEXT NOT NULL,
 	url TEXT NOT NULL,
 	tech TEXT,
+	tags TEXT,
 	desc TEXT,
 	text TEXT,
 	startDate TEXT,
 	endDate TEXT
+)
+`
+
+const AwardsSchema = `
+CREATE TABLE IF NOT EXISTS awards (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	title TEXT NOT NULL,
+	issuer TEXT NOT NULL,
+	type TEXT NOT NULL,
+	tags TEXT,
+	description TEXT,
+	date TEXT
 )
 `

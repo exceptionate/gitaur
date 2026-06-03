@@ -6,6 +6,7 @@ type Project struct {
 	Owner     string
 	Url       string
 	Tech      []string
+	Tags      []string
 	Desc      string
 	Text      string
 	StartDate string
