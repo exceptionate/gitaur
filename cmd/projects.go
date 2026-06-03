@@ -157,7 +157,7 @@ func addProject() {
 	}
 
 	techInput := lib.PromptWithDefault(
-		"Technologies (comma separated)",
+		"Languages, Technologies and Frameworks (comma separated) ",
 		strings.Join(project.Tech, ", "),
 	)
 
@@ -326,8 +326,43 @@ func updateProject(repo string, field string) {
 	fmt.Println(
 		ui.Success.Render(
 			fmt.Sprintf(
-				"%s updated successfully.",
+				"%s's %s updated successfully.",
+				repo,
 				field,
+			),
+		),
+	)
+}
+
+func deleteProject(repo string) {
+	result, err := db.Conn.Exec(
+		"DELETE FROM projects WHERE repo = ?",
+		repo,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	if rowsAffected == 0 {
+		fmt.Println(
+			ui.Error.Render(
+				"Project not found.",
+			),
+		)
+		return
+	}
+
+	fmt.Println(
+		ui.Success.Render(
+			fmt.Sprintf(
+				"Project '%s' deleted successfully.",
+				repo,
 			),
 		),
 	)
@@ -344,7 +379,7 @@ func projects(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if len(args) == 3 && args[1] == "set" {
+	if len(args) == 3 && (args[1] == "--set" || args[1] == "-s") {
 		updateProject(
 			args[0],
 			args[2],
@@ -352,13 +387,47 @@ func projects(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(ui.Error.Render("Invalid command. Use 'gitaur projects' to list projects, 'gitaur projects add' to add a new project, or 'gitaur projects <repo> set <field>' to update a project field."))
+	if len(args) == 3 {
+		if (args[1] == "--delete" || args[1] == "-d") && (args[2] == "--force" || args[2] == "-f") {
+			deleteProject(args[0])
+			return
+		}
+
+		if (args[1] == "--force" || args[1] == "-f") && (args[2] == "--delete" || args[2] == "-d") {
+			deleteProject(args[0])
+			return
+		}
+	}
+
+	if len(args) == 2 && (args[1] == "--delete" || args[1] == "-d") {
+		//prompt for confirmation
+		fmt.Printf(
+			"%s Are you sure you want to delete the project '%s'? This action cannot be undone. (y/N): ",
+			ui.Warning.Render("Warning:"),
+			args[0],
+		)
+
+		var confirmation string
+		fmt.Scanln(&confirmation)
+
+		if strings.ToLower(confirmation) != "y" {
+			fmt.Println(ui.Info.Render("Project deletion cancelled."))
+			return
+		}
+		deleteProject(
+			args[0],
+		)
+		return
+	}
+
+	fmt.Println(ui.Error.Render("Invalid command. Use 'gitaur projects' to list projects, 'gitaur projects add' to add a new project, 'gitaur projects <repo> --set <field>' to update a project field, or 'gitaur projects <repo> --delete [-f]' to delete a project."))
 }
 
 var projectsCmd = &cobra.Command{
-	Use:   "projects",
-	Short: "List and manage your projects",
-	Run:   projects,
+	Use:                "projects",
+	Short:              "List and manage your projects",
+	Run:                projects,
+	DisableFlagParsing: true,
 }
 
 func init() {
