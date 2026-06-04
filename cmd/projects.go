@@ -465,7 +465,7 @@ func projects(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(ui.Error.Render("Invalid command. Use 'gitaur projects' to list projects, 'gitaur projects add' to add a new project, 'gitaur projects <repo> --set <field>' to update a project field, or 'gitaur projects <repo> --delete [-f]' to delete a project."))
+	fmt.Println(ui.Error.Render("Invalid command."))
 }
 
 var projectsCmd = &cobra.Command{

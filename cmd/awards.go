@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func showAwards() {
+func showAwards(short bool) {
 	rows, err := db.Conn.Query(`
 		SELECT id, title, issuer, type, tags, description, date
 		FROM awards
@@ -59,22 +59,28 @@ func showAwards() {
 
 	fmt.Printf("%s\n\n", ui.Info.Render(fmt.Sprintf("%d awards found:", len(awards))))
 
-	for i, award := range awards {
-		awardInfo := fmt.Sprintf(
-			"%s %d\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n",
-			ui.Label.Render("ID:"), award.ID,
-			ui.Label.Render("Title:"), award.Title,
-			ui.Label.Render("Issuer:"), award.Issuer,
-			ui.Label.Render("Type:"), award.Type,
-			ui.Label.Render("Tags:"), strings.Join(award.Tags, ", "),
-			ui.Label.Render("Description:"), award.Description,
-			ui.Label.Render("Date:"), award.Date,
-		)
+	if short {
+		for _, award := range awards {
+			fmt.Printf("%s: %s\n", ui.Label.Render(strconv.Itoa(award.ID)), award.Title)
+		}
+	} else {
+		for i, award := range awards {
+			awardInfo := fmt.Sprintf(
+				"%s %d\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n",
+				ui.Label.Render("ID:"), award.ID,
+				ui.Label.Render("Title:"), award.Title,
+				ui.Label.Render("Issuer:"), award.Issuer,
+				ui.Label.Render("Type:"), award.Type,
+				ui.Label.Render("Tags:"), strings.Join(award.Tags, ", "),
+				ui.Label.Render("Description:"), award.Description,
+				ui.Label.Render("Date:"), award.Date,
+			)
 
-		fmt.Println(awardInfo)
+			fmt.Println(awardInfo)
 
-		if i != len(awards)-1 {
-			fmt.Println("----------------------------")
+			if i != len(awards)-1 {
+				fmt.Println("----------------------------")
+			}
 		}
 	}
 }
@@ -247,7 +253,12 @@ func deleteAward(id int) {
 
 func awards(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		showAwards()
+		showAwards(false)
+		return
+	}
+
+	if len(args) == 1 && args[0] == "--id" {
+		showAwards(true)
 		return
 	}
 
@@ -317,7 +328,7 @@ func awards(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(ui.Error.Render("Invalid command. Use 'gitaur awards' to list awards, 'gitaur awards add' to add a new award, 'gitaur awards <id> --set <field>' to update an award field, or 'gitaur awards <id> --delete [-f]' to delete an award."))
+	fmt.Println(ui.Error.Render("Invalid command."))
 }
 
 var awardsCmd = &cobra.Command{

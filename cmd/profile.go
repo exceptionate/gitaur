@@ -82,11 +82,11 @@ func profile(cmd *cobra.Command, args []string) {
 				fmt.Println()
 			}
 		} else {
-			fmt.Println(ui.Error.Render("%s is not a valid subcommand. Use 'gitaur profile' to view profile or 'gitaur profile update <field> <value>' to update profile.", args[0]))
+			fmt.Println(ui.Error.Render("Invalid subcommand."))
 		}
 
 	} else {
-		fmt.Println(ui.Error.Render("Invalid command format. Use 'gitaur profile' to view profile or 'gitaur profile update <field> <value>' to update profile."))
+		fmt.Println(ui.Error.Render("Invalid command format."))
 	}
 }
 

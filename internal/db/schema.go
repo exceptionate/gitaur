@@ -40,3 +40,15 @@ CREATE TABLE IF NOT EXISTS awards (
 	date TEXT
 )
 `
+
+const CertificationsSchema = `
+CREATE TABLE IF NOT EXISTS certifications (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	title TEXT NOT NULL,
+	platform TEXT NOT NULL,
+	description TEXT,
+	url TEXT,
+	date TEXT,
+	tags TEXT
+)
+`
