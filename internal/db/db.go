@@ -44,6 +44,14 @@ func CreateSchema() error {
 	if err != nil {
 		return err
 	}
+	_, err = Conn.Exec(ExperiencesSchema)
+	if err != nil {
+		return err
+	}
+	_, err = Conn.Exec(EducationSchema)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -68,12 +76,12 @@ func SchemaExists() (bool, error) {
 		SELECT COUNT(*)
 		FROM sqlite_master
 		WHERE type='table'
-		AND name IN ('user', 'projects', 'awards', 'certifications')
+		AND name IN ('user', 'projects', 'awards', 'certifications', 'experiences', 'education')
 	`).Scan(&count)
 
 	if err != nil {
 		return false, err
 	}
 
-	return count == 4, nil
+	return count == 6, nil
 }

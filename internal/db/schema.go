@@ -52,3 +52,28 @@ CREATE TABLE IF NOT EXISTS certifications (
 	tags TEXT
 )
 `
+
+const ExperiencesSchema = `
+CREATE TABLE IF NOT EXISTS experiences (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	title TEXT NOT NULL,
+	company TEXT NOT NULL,
+	startDate TEXT,
+	endDate TEXT,
+	description TEXT,
+	tags TEXT
+)
+`
+
+const EducationSchema = `
+CREATE TABLE IF NOT EXISTS education (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	school TEXT NOT NULL,
+	degree TEXT NOT NULL,
+	field TEXT NOT NULL,
+	startDate TEXT,
+	endDate TEXT,
+	grade TEXT,
+	description TEXT
+)
+`
