@@ -15,7 +15,12 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+      - -s -w 
+        -X github.com/exceptionate/gitaur/cmd.Version={{.Version}} 
+        -X github.com/exceptionate/gitaur/cmd.Release=production
+        -X github.com/exceptionate/gitaur/cmd.Commit={{.Commit}} 
+        -X github.com/exceptionate/gitaur/cmd.BuildDate={{.Date}} 
+        -X github.com/exceptionate/gitaur/cmd.Platform={{.Os}}-{{.Arch}}
 
 archives:
   - format: tar.gz
