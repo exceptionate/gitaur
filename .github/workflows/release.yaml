@@ -1,0 +1,71 @@
+name: Automated Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go Environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run GoReleaser (Mac & GitHub Releases)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Set up GPG Private Key signing environment
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          
+      - name: Build and Sign APT Linux Repository
+        env:
+          PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          # 1. Clone the static hosted APT repo cleanly
+          git clone https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/mvishok/apt.git deployment-apt
+          cd deployment-apt
+          
+          mkdir -p pool/main/
+          cp ../dist/*.deb pool/main/
+          
+          # 3. Regenerate index map layouts
+          mkdir -p dists/stable/main/binary-amd64/
+          dpkg-scanpackages pool/main /dev/null > dists/stable/main/binary-amd64/Packages
+          gzip -9c dists/stable/main/binary-amd64/Packages > dists/stable/main/binary-amd64/Packages.gz
+          
+          # 4. Generate metadata Release indices with explicit suit codenames
+          apt-ftparchive -o APT::FTPArchive::Release::Codename="stable" \
+                         -o APT::FTPArchive::Release::Suite="stable" \
+                         -o APT::FTPArchive::Release::Components="main" \
+                         -o APT::FTPArchive::Release::Architectures="amd64" \
+                         release dists/stable > dists/stable/Release
+                         
+          # 5. Cryptographically sign the indexes via non-interactive GPG pipelines
+          echo "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --default-key vishokmanikantan@gmail.com --clearsign -o dists/stable/InRelease dists/stable/Release
+          echo "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --default-key vishokmanikantan@gmail.com -abs -o dists/stable/Release.gpg dists/stable/Release
+          
+          # 6. Commit and dispatch straight to your live domain architecture
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: automated binary release deployment for ${{ github.ref_name }}"
+          git push origin main

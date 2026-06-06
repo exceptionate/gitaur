@@ -1,0 +1,51 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gitaur
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+
+nfpms:
+  - package_name: gitaur
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    formats:
+      - deb
+    license: MIT
+    maintainer: mvishok <vishokmanikantan@gmail.com>
+    description: "A simple git utility CLI tool"
+    section: utils
+    priority: optional
+    bindir: /usr/bin
+
+brews:
+  - repository:
+      owner: mvishok
+      name: homebrew-tap
+      token: "{{ .Env.PERSONAL_ACCESS_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/Exceptionate/gitaur"
+    description: "A simple git utility CLI tool"
+    install: |
+      if OS.mac? && Hardware::CPU.arm?
+        bin.install "gitaur-darwin-arm64" => "gitaur"
+      elsif OS.mac? && Hardware::CPU.intel?
+        bin.install "gitaur-darwin-amd64" => "gitaur"
+      else
+        bin.install "gitaur"
+      fi

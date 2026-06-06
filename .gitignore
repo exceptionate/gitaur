@@ -33,3 +33,10 @@ go.work.sum
 
 gitaur
 gitaur.db
+
+gitaur-package/
+gitaur-package.deb
+
+gitaur.gpg
+gitaur-macos-arm64
+gitaur-macos-arm64.tar.gz
