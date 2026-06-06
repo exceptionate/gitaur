@@ -4,8 +4,9 @@ go 1.26.3
 
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/spf13/cobra v1.10.2
+	github.com/zalando/go-keyring v0.2.8
+	modernc.org/sqlite v1.51.0
 )
 
 require (
@@ -28,10 +29,8 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	github.com/zalando/go-keyring v0.2.8 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	modernc.org/libc v1.72.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.51.0 // indirect
 )

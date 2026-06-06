@@ -14,7 +14,7 @@ var Conn *sql.DB
 func Init() error {
 	var err error
 
-	Conn, err = sql.Open("sqlite3", DBPath)
+	Conn, err = sql.Open("sqlite", DBPath)
 	if err != nil {
 		return err
 	}
