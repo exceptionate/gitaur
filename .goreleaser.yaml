@@ -47,10 +47,4 @@ brews:
     homepage: "https://github.com/Exceptionate/gitaur"
     description: "A simple git utility CLI tool"
     install: |
-      if OS.mac? && Hardware::CPU.arm?
-        bin.install "gitaur-darwin-arm64" => "gitaur"
-      elsif OS.mac? && Hardware::CPU.intel?
-        bin.install "gitaur-darwin-amd64" => "gitaur"
-      else
-        bin.install "gitaur"
-      fi
+      bin.install "gitaur"
